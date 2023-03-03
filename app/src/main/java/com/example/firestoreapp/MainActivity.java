@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
@@ -23,15 +24,11 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText nameET,emailET;
     TextView text;
-    private Button saveBtn,readBtn;
-
+    private Button saveBtn,readBtn,deleteBtn;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
     private static final String KEY_NAME = "name";
     private static final String KEY_EMAIL = "email";
-
     DocumentReference empRef = db.collection("Users").document("Employees");
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +56,30 @@ public class MainActivity extends AppCompatActivity {
 
 
         });
+
+        deleteBtn = findViewById(R.id.deleteBtn);
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DeleteData(emailET.getText().toString());
+            }
+        });
+    }
+
+    private void DeleteData(String key) {
+        //both the method works but differently
+//        empRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void unused) {
+//                Toast.makeText(MainActivity.this, "Data deleted", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+
+        //deleting value according to name
+        empRef.update(KEY_NAME, FieldValue.delete());
+
+        //deleting value according to Email
+        empRef.update(KEY_EMAIL,FieldValue.delete());
     }
 
     //Reading simple data from firestore (Retrieving data)
