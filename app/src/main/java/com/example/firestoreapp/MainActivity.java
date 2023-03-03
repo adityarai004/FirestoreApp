@@ -101,13 +101,18 @@ public class MainActivity extends AppCompatActivity {
     private void SaveDataOnFireStore(){
         String name = nameET.getText().toString().trim();
         String email = emailET.getText().toString().trim();
+        Employee e1 = new Employee();
+        e1.setName(name);
+        e1.setEmail(email);
 
-        HashMap<String, Object> data = new HashMap<>();
-        data.put(KEY_NAME,name);
-        data.put(KEY_EMAIL, email);
+
+// this hashmap method works too but we will work on POJO too
+//        HashMap<String, Object> data = new HashMap<>();
+//        data.put(KEY_NAME,name);
+//        data.put(KEY_EMAIL, email);
 
 
-        db.collection("Users").document("Employees").set(data).addOnSuccessListener(new OnSuccessListener<Void>() {
+        db.collection("Users").document("Employees").set(e1).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
                 Toast.makeText(getApplicationContext(), "Name : " + name + "  and email : " + email + " added to firestore." , Toast.LENGTH_SHORT).show();
@@ -126,9 +131,14 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Error Found", Toast.LENGTH_SHORT).show();
                 }
                 if(value != null && value.exists()){
-                    String name = value.get(KEY_NAME).toString();
-                    String email = value.get(KEY_EMAIL).toString();
-                    text.setText("username : " + name + "Email : " + email);
+
+                    //Getting  data (via custom object)
+                    Employee employee = value.toObject(Employee.class);
+
+//                    String name = value.get(KEY_NAME).toString();
+//                    String email = value.get(KEY_EMAIL).toString();
+
+                    text.setText("username : " + employee.getName() + "\nEmail : " + employee.getEmail());
                 }
             }
         });
