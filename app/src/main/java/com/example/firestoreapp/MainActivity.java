@@ -1,5 +1,6 @@
 package com.example.firestoreapp;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +13,9 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.HashMap;
 
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //Reading simple data from firestore (Retrieving data)
     private void ReadData() {
         empRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
@@ -71,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    ////Saving simple data on firestore (Creating data)
     private void SaveDataOnFireStore(){
         String name = nameET.getText().toString().trim();
         String email = emailET.getText().toString().trim();
@@ -84,6 +90,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void unused) {
                 Toast.makeText(getApplicationContext(), "Name : " + name + "  and email : " + email + " added to firestore." , Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    //Listening to snapshot changes
+    @Override
+    protected void onStart() {
+        super.onStart();
+        empRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if(error != null){
+                    Toast.makeText(MainActivity.this, "Error Found", Toast.LENGTH_SHORT).show();
+                }
+                if(value != null && value.exists()){
+                    String name = value.get(KEY_NAME).toString();
+                    String email = value.get(KEY_EMAIL).toString();
+                    text.setText("username : " + name + "Email : " + email);
+                }
             }
         });
     }
