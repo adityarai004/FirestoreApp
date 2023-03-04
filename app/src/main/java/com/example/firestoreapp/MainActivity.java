@@ -11,12 +11,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 
@@ -28,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String KEY_NAME = "name";
     private static final String KEY_EMAIL = "email";
-    DocumentReference empRef = db.collection("Users").document("Employees");
+    private DocumentReference empRef = db.collection("Users").document("Employees");
+
+    CollectionReference collectionReference = db.collection("Users");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +45,10 @@ public class MainActivity extends AppCompatActivity {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SaveDataOnFireStore();
+//                use SaveDataOnFireStore when need to store data in the same document
+//                SaveDataOnFireStore();
+                // use SaveDataToNewDocument for creating new document and adding new data
+                SaveDataToNewDocument();
             }
         });
 
@@ -51,10 +59,9 @@ public class MainActivity extends AppCompatActivity {
         readBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ReadData();
+//                ReadData();
+                GetAllDocumentsInCollection();
             }
-
-
         });
 
         deleteBtn = findViewById(R.id.deleteBtn);
@@ -64,6 +71,33 @@ public class MainActivity extends AppCompatActivity {
                 DeleteData(emailET.getText().toString());
             }
         });
+
+
+    }
+
+    private void GetAllDocumentsInCollection() {
+        collectionReference.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            String data = "";
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                for(QueryDocumentSnapshot snapshots : queryDocumentSnapshots ){
+//                    Log.v("TAG", snapshots.getString(KEY_NAME));
+//                    retrieving into objects
+                    Employee employee = snapshots.toObject(Employee.class);
+                    data += "Name : " + employee.getName() + " Email : " + employee.getEmail() + "\n";
+
+                }
+                text.setText(data);
+            }
+        });
+    }
+
+    private void SaveDataToNewDocument() {
+        String name = nameET.getText().toString();
+        String email = emailET.getText().toString();
+
+        Employee employee = new Employee(name,email);
+        collectionReference.add(employee);
     }
 
     private void DeleteData(String key) {
@@ -124,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        GetAllDocumentsInCollection();
         empRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -143,4 +178,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    //Creating multiple documents and retrieving multiple documents
+
 }
